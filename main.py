@@ -27,7 +27,9 @@ class tubular:
 
 class cement:
     def __init__(self, top, low, tub0, tub1):
-        rightWall = max(tub0.outD, tub1.outD)
+        checkerRightWall = [tub0, tub1]
+        whichTube = np.argmax([tub0.outD, tub1.outD])
+        rightWall = checkerRightWall[whichTube].inD
         leftWall = min(tub0.outD, tub1.outD)
         self.horVals = [leftWall, rightWall]
         self.topVals = [top, top]
@@ -36,17 +38,23 @@ class cement:
 class well:
     def __init__(self):
         self.tubulars = {}
+        self.tubularsLeft = {}
         self.cements = {}
         self.largestTub = 0
+        self.deepestTub = 0
         self.cementID = 0
        
     # may want to create rectangles here ...
     def addTubular(self, tub):
-        assert tub.name not in self.tubulars.keys()
-        self.tubulars[tub.name] = {"inD":tub.inD, "outD":tub.outD, "weight":tub.weight, "top":tub.top, "low":tub.low, "info":tub.info, "summary":tub.summary,
-                                   "thickness": tub.thickness, "totLen": tub.totalLength}
-        if tub.outD > self.largestTub:
-            self.largestTub = tub.outD
+        try:
+            assert tub.name not in self.tubulars.keys()
+            self.tubulars[tub.name] = {"xy":np.array([tub.inD, tub.low]), "width":tub.thickness, "height":tub.totalLength, "outD": tub.outD, "summary": tub.summary, "low": tub.low}
+            if tub.outD > self.largestTub:
+                self.largestTub = tub.outD
+            if tub.low > self.deepestTub:
+                self.deepestTub = tub.low
+        except:
+            raise ValueError("Tubular names must be unique! that tubular has been added to this well")
             
     def addCement(self, cem):
         self.cements[self.cementID] = {"horVals": cem.horVals, "topVals": cem.topVals, "lowVals": cem.lowVals}
@@ -57,8 +65,8 @@ class well:
         self.fig, self.ax = plt.subplots(figsize = (10,10))
         # the tubulars
         for key, elem in self.tubulars.items():
-            self.ax.vlines(elem["inD"], elem["low"], elem["top"])
-            self.ax.vlines(-elem["inD"], elem["low"], elem["top"])
+            self.ax.add_patch(Rectangle(elem["xy"], elem["width"], elem["height"], color = "black"))
+            self.ax.add_patch(Rectangle((-1*elem["xy"][0], elem["xy"][1]), -1*elem["width"], elem["height"], color = "black"))
             # showing tubular summaries
             xText = elem["outD"] + (0.075 * stretchHorView)
             yText = elem["low"] * 0.85 
@@ -68,12 +76,13 @@ class well:
         for key, elem in self.cements.items():
             self.ax.fill_between(elem["horVals"], elem["topVals"], elem["lowVals"])
             
-            
-        self.ax.invert_yaxis()
         self.ax.set_ylabel("MD [ft]")
-        self.ax.set_xlim(right = stretchHorView)
-        plt.tight_layout()
+        self.ax.set_xlim([-10,stretchHorView])
+        self.ax.set_ylim([0, self.deepestTub])
+        self.ax.invert_yaxis()
+        #plt.tight_layout()
         plt.show()
+
         
 ### test
 
