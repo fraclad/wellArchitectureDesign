@@ -5,7 +5,8 @@ plt.rcParams["font.family"] = "Helvetica"
 plt.rcParams["font.size"] = 12
         
 class well:
-    def __init__(self, name = None, kop = None, bur = None, inc = None):
+    def __init__(self, name = None, topVerView = None, mdl = None, kop = None, bur = None, inc = None, 
+                 verStretchFactor = 1.05, horStretchFactor = 4):
         self.tubulars = {}
         self.cements = {}
         self.largestTub = 0
@@ -14,9 +15,13 @@ class well:
         self.showTubularSummary = True
         self.showCementSummary = True
         self.name = name
+        self.topVerView = topVerView
+        self.mdl = mdl
         self.kop = kop
         self.bur = bur
         self.inc = inc
+        self.verStretchFactor = verStretchFactor
+        self.horStretchFactor = horStretchFactor
        
     def addTubular(self, tub):
         try:
@@ -41,8 +46,8 @@ class well:
         self.showCementSummary = False       
                             
     def visualize(self):
-        stretchHorView = self.largestTub * 4
-        stretchVerView = self.deepestTub * 1.1
+        stretchHorView = self.largestTub * self.horStretchFactor
+        stretchVerView = self.deepestTub * self.verStretchFactor
         self.fig, self.ax = plt.subplots(figsize = (8.27, 11.69))
         # the tubulars
         for key, elem in self.tubulars.items():
@@ -84,11 +89,21 @@ class well:
             
         self.ax.set_ylabel("MD [ft]")
         self.ax.set_xlim([-stretchHorView, stretchHorView])
-        self.ax.set_ylim([0, stretchVerView])
+        if self.topVerView is None:
+            self.ax.set_ylim([0, stretchVerView])
+        else:
+            self.ax.set_ylim([self.topVerView, stretchVerView])
+        
         if self.kop is not None:
             kopColor = "#0C1713"
             self.ax.hlines(self.kop, -stretchHorView, stretchHorView, linestyle = "--", color = kopColor, linewidth = 0.5, alpha = 0.75,zorder=0)
             self.ax.annotate("KOP at {} ft".format(self.kop), xy = (-stretchHorView + 1, self.kop - 25), color = kopColor, alpha = 0.75)
+
+        if self.mdl is not None:
+            mdlColor = "#348ceb"
+            self.ax.hlines(self.mdl, -stretchHorView, stretchHorView, linestyle = "--", color = mdlColor, linewidth = 0.5, alpha = 0.75,zorder=0)
+            self.ax.annotate("Mudline at {} ft".format(self.mdl), xy = (-stretchHorView + 1, self.mdl - 25), color = mdlColor, alpha = 0.75)        
+                
         self.ax.invert_yaxis()
         plt.title(self.name, loc = "left")
         plt.tight_layout()
