@@ -21,7 +21,8 @@ class well:
     def addTubular(self, tub):
         try:
             assert tub.name not in self.tubulars.keys()
-            self.tubulars[tub.name] = {"xy":np.array([tub.inD, tub.low]), "width":tub.thickness, "height":tub.totalLength, "outD": tub.outD, "summary": tub.summary, "low": tub.low}            
+            self.tubulars[tub.name] = {"xy":np.array([tub.inD, tub.low]), "width":tub.thickness, "height":tub.totalLength, 
+                                       "outD": tub.outD, "summary": tub.summary, "low": tub.low, "shoeWidth":tub.shoeWidth}            
             if tub.outD > self.largestTub:
                 self.largestTub = tub.outD
             if tub.low > self.deepestTub:
@@ -37,12 +38,12 @@ class well:
         self.showTubularSummary = False
         
     def hideCementSummary(self):
-        self.showCementSummary = False             
-                    
+        self.showCementSummary = False       
+                            
     def visualize(self):
         stretchHorView = self.largestTub * 4
         stretchVerView = self.deepestTub * 1.1
-        self.fig, self.ax = plt.subplots(figsize = (10,12))
+        self.fig, self.ax = plt.subplots(figsize = (8.27, 11.69))
         # the tubulars
         for key, elem in self.tubulars.items():
             self.ax.add_patch(Rectangle(elem["xy"], elem["width"], elem["height"], color = "black"))
@@ -65,6 +66,21 @@ class well:
                 yText = elem["lowVals"][1]
                 self.ax.text(xText, yText, elem["summary"], 
                              verticalalignment = "top", horizontalalignment = "left", color = "#6b705c")
+                
+        # the shoes
+        for key, elem in self.tubulars.items():
+            if elem["shoeWidth"] is not None:
+                vizShoeHeight = stretchVerView * 0.01
+                p0 = [elem["outD"], elem["low"]]
+                p1 = [elem["outD"], elem["low"] - vizShoeHeight]
+                p2 = [elem["outD"] + elem["shoeWidth"], elem["low"]]
+                shoe = plt.Polygon([p0, p1, p2], color = "black")
+                self.ax.add_patch(shoe)
+                p0[0] *= -1
+                p1[0] *= -1
+                p2 = [-elem["outD"] - elem["shoeWidth"], elem["low"]]
+                shoe = plt.Polygon([p0, p1, p2], color = "black")
+                self.ax.add_patch(shoe)
             
         self.ax.set_ylabel("MD [ft]")
         self.ax.set_xlim([-stretchHorView, stretchHorView])
