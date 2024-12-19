@@ -1,5 +1,5 @@
 from elements import Tubular, Cement, Packer, Tubing
-from well import well
+from well import Well
 
 # Existing tubulars
 t0 = Tubular(name="conductor", inD=7.25, outD=8, weight=58, top=0, low=250)
@@ -22,7 +22,7 @@ p2 = Packer(depth=5500, inner_tubular=tubing, outer_tubular=t4, packer_type="tub
 p3 = Packer(depth=5000, inner_tubular=t4, outer_tubular=t3, packer_type="casing")      # Liner to production casing
 
 # Create and configure well
-well0 = well(name="Test Well 001", kop=5000)
+well0 = Well(name="Test Well 001", kop=5000)
 
 # Add components
 well0.addTubular(t0)

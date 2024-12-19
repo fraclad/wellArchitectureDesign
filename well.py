@@ -5,7 +5,7 @@ from elements import Tubing
 plt.rcParams["font.family"] = "Helvetica"
 plt.rcParams["font.size"] = 8
 
-class well:
+class Well:
     def __init__(self, name=None, topVerView=None, mdl=None, kop=None, bur=None, inc=None, 
                  verStretchFactor=1.05, horStretchFactor=4):
         self.tubulars = {}
