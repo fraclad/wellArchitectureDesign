@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from elements import Tubing
+from .elements import Tubing
 plt.rcParams["font.family"] = "Helvetica"
 plt.rcParams["font.size"] = 8
 
