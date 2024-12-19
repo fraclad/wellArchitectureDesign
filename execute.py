@@ -17,19 +17,20 @@ c1 = Cement(top=1800, low=3750, tub0=t2, tub1=t1)
 c2 = Cement(top=3500, low=5200, tub0=t2, tub1=t3)
 
 # Create packers
-p1 = Packer(depth=4000, tubing=tubing, casing=t3)  # Packer in production casing
-p2 = Packer(depth=5500, tubing=tubing, casing=t4)  # Packer in liner
+p1 = Packer(depth=4000, inner_tubular=tubing, outer_tubular=t3, packer_type="tubing")  # Tubing to production casing
+p2 = Packer(depth=5500, inner_tubular=tubing, outer_tubular=t4, packer_type="tubing")  # Tubing to liner
+p3 = Packer(depth=5000, inner_tubular=t4, outer_tubular=t3, packer_type="casing")      # Liner to production casing
 
 # Create and configure well
 well0 = well(name="Test Well 001", kop=5000)
 
-# Add tubulars
+# Add components
 well0.addTubular(t0)
 well0.addTubular(t1)
 well0.addTubular(t2)
 well0.addTubular(t3)
 well0.addTubular(t4)
-well0.addTubular(tubing)  # Add tubing
+well0.addTubular(tubing)
 
 # Add cement
 well0.addCement(c0)
@@ -39,6 +40,7 @@ well0.addCement(c2)
 # Add packers
 well0.addPacker(p1)
 well0.addPacker(p2)
+well0.addPacker(p3)  # New casing-to-casing packer
 
 # Visualize
 well0.visualize()

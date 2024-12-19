@@ -30,22 +30,27 @@ class Cement:
         self.lowVals = [low, low]
         self.summary = "cement from\n{0} ft to {1}ft".format(top, low)
         
+
 class Packer:
-    def __init__(self, depth, tubing, casing):
+    def __init__(self, depth, inner_tubular, outer_tubular, packer_type="tubing"):
         """
         Initialize a packer
         
         Parameters:
         depth (float): The depth at which the packer is set
-        tubing (Tubular): The tubing the packer is attached to
-        casing (Tubular): The casing the packer seals against
+        inner_tubular (Tubular): The inner tubular (tubing or casing) the packer is attached to
+        outer_tubular (Tubular): The outer tubular the packer seals against
+        packer_type (str): Type of packer - "tubing" for tubing-to-casing or "casing" for casing-to-casing
         """
         self.depth = depth
-        self.innerD = tubing.outD  # Packer seals on tubing OD
-        self.outerD = casing.inD   # Packer seals against casing ID
-        self.height = 40  # Standard packer height in feet
+        self.inner_tubular = inner_tubular
+        self.outer_tubular = outer_tubular
+        self.innerD = inner_tubular.outD    # Packer seals on inner tubular OD
+        self.outerD = outer_tubular.inD     # Packer seals against outer tubular ID
+        self.height = 75  # Standard packer height in feet
         self.top = depth - self.height/2
         self.bottom = depth + self.height/2
+        self.type = packer_type
         
 class Tubing(Tubular):
     """Tubing class inherits from Tubular but has a different default color"""
