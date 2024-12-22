@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wellarchitecturedesign"
+description = "A package for well architecture design and visualization"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["well", "architecture", "design", "visualization"]
+license = {text = "MIT"}
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "numpy>=1.21.0",
+    "matplotlib>=3.4.0",
+]
+
+[tool.setuptools]
+packages = ["wellarchitecturedesign"]
+
+[tool.setuptools_scm]
+write_to = "wellarchitecturedesign/_version.py"
