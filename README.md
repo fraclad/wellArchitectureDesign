@@ -64,6 +64,10 @@ well.addPacker(p3)
 well.visualize()
 ```
 
+The code above generates:
+
+!(sample wellbore diagram output)[https://raw.githubusercontent.com/fraclad/wellArchitectureDesign/ed44bbf331301fae5fa1118612315d8276c56ca6/plots/result2024Dec19.svg]
+
 ## Component Stats (Like a Character Build Screen)
 
 ### Tubular (The Main Character)
