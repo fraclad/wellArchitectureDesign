@@ -15,7 +15,12 @@ class Tubular:
         self.shoeSize = shoeSize
         self.shoeWidth = None
         if shoeSize is not None:
+            # Calculate shoe width as the difference between shoeSize and outD
+            # This determines how far the shoe extends outward
             self.shoeWidth = shoeSize - outD
+            # Ensure shoeWidth is positive and reasonable
+            if self.shoeWidth <= 0:
+                self.shoeWidth = outD * 0.2  # Default to 20% of outD if shoeSize is too small
         self.summary = "{0}\nID = {1} in\nOD = {2} in\nFrom {3} ft to {4} ft\nWeight = {5} lb/ft\nShoe = {6} in\n{7}".format(
             name, inD, outD, top, low, weight, shoeSize, info)
 
@@ -57,3 +62,16 @@ class Tubing(Tubular):
     def __init__(self, name, inD, outD, weight, top, low, **kwargs):
         super().__init__(name, inD, outD, weight, top, low, **kwargs)
         self.color = "#348ceb"  # Default blue color for tubing
+
+class OpenHole(Tubular):
+    """OpenHole class inherits from Tubular but represents an open wellbore section with no shoe"""
+    def __init__(self, name, diameter, weight, top, low, **kwargs):
+        inD = diameter
+        outD = diameter * 1.01 
+        # this wont matter anyway bcs the visualize thickness is not the actual physical thickness for tubular elements
+        # also "openhole" has no physical thickness, this is put just for consistency
+        super().__init__(name, inD, outD, weight, top, low, shoeSize=None, **kwargs)
+        self.color = "#9c3d2a"
+        self.is_openhole = True
+        self.summary = "{0}\nDiameter = {1} in\nDepth = {3} ft\n{4}".format(
+            name, diameter, top, low, self.info)

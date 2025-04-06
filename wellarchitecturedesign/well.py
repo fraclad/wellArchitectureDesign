@@ -7,7 +7,7 @@ plt.rcParams["font.size"] = 8
 
 class Well:
     def __init__(self, name=None, topVerView=None, mdl=None, kop=None, bur=None, inc=None, 
-                 verStretchFactor=1.05, horStretchFactor=4):
+                 verStretchFactor=1.025, horStretchFactor=4):
         self.tubulars = {}
         self.cements = {}
         self.packers = []
@@ -41,8 +41,12 @@ class Well:
         try:
             assert tub.name not in self.tubulars.keys()
             thickness = tub.outD - tub.inD
-            self.thicknesses.append(thickness)
-            self.minThickness = min(self.thicknesses)
+            
+            # Only add non-openhole tubular thicknesses for minimum calculation
+            is_openhole = hasattr(tub, 'is_openhole') and tub.is_openhole or 'openhole' in str(tub.name).lower()
+            if not is_openhole:
+                self.thicknesses.append(thickness)
+                self.minThickness = min(self.thicknesses) if self.thicknesses else thickness
             
             self.tubulars[tub.name] = {
                 "xy": np.array([tub.inD, tub.low]), 
@@ -55,7 +59,9 @@ class Well:
                 "top": tub.top,
                 "shoeWidth": tub.shoeWidth,
                 "inD": tub.inD,
-                "name": tub.name  # Store name for reference
+                "name": tub.name,  # Store name for reference
+                "color": getattr(tub, "color", "black"),  # Store color with fallback to black
+                "is_openhole": is_openhole  # Store if it's an openhole
             }
             if tub.outD > self.largestTub:
                 self.largestTub = tub.outD
@@ -138,40 +144,53 @@ class Well:
             center_pos = elem["centerline"]
             visual_outer_edge = center_pos + self.minThickness/2  # This is where the visible casing edge is
             
+            # Set z-order based on whether it's an openhole - casings always on top
+            z_order = 1 if elem.get("is_openhole", False) else 3
+            
             # Draw casing with minimum thickness
             self.ax.add_patch(Rectangle((center_pos - self.minThickness/2, elem["xy"][1]), 
                                       self.minThickness, elem["height"], 
-                                      color="black", zorder=2))
+                                      color=elem["color"], zorder=z_order))
             self.ax.add_patch(Rectangle((-center_pos - self.minThickness/2, elem["xy"][1]), 
                                       self.minThickness, elem["height"], 
-                                      color="black", zorder=2))
+                                      color=elem["color"], zorder=z_order))
             
             # Draw shoe based on the visual outer edge
             if elem["shoeWidth"] is not None:
                 vizShoeHeight = stretchVerView * 0.01
-                # Right side shoe
+                shoe_width = abs(elem["shoeWidth"])  # Ensure positive width
+                
+                # Right side shoe - make it point outwards
                 shoe_points = [
                     [visual_outer_edge, elem["low"]],  # Base point at visual casing edge
-                    [visual_outer_edge, elem["low"] - vizShoeHeight],  # Top point
-                    [visual_outer_edge + elem["shoeWidth"], elem["low"]]  # Tip point
+                    [visual_outer_edge, elem["low"] - vizShoeHeight],  # Top point at casing edge
+                    [visual_outer_edge + shoe_width, elem["low"]]  # Tip point extending outward
                 ]
-                shoe = plt.Polygon(shoe_points, color="black", zorder=3)
+                shoe = plt.Polygon(shoe_points, color=elem["color"], zorder=z_order+1)
                 self.ax.add_patch(shoe)
                 
-                # Left side shoe (mirror)
+                # Left side shoe (mirror) - make it point outwards
                 shoe_points_left = [
-                    [-visual_outer_edge, elem["low"]],
-                    [-visual_outer_edge, elem["low"] - vizShoeHeight],
-                    [-(visual_outer_edge + elem["shoeWidth"]), elem["low"]]
+                    [-visual_outer_edge, elem["low"]],  # Base point at visual casing edge
+                    [-visual_outer_edge, elem["low"] - vizShoeHeight],  # Top point at casing edge
+                    [-visual_outer_edge - shoe_width, elem["low"]]  # Tip point extending outward
                 ]
-                shoe = plt.Polygon(shoe_points_left, color="black", zorder=3)
+                shoe = plt.Polygon(shoe_points_left, color=elem["color"], zorder=z_order+1)
                 self.ax.add_patch(shoe)
             
             if self.showTubularSummary:
-                xText = elem["outD"] + (0.075 * stretchHorView)
-                yText = elem["low"] * 0.85
-                self.ax.text(xText, yText, elem["summary"],
-                           verticalalignment="top", horizontalalignment="left")
+                if elem.get("is_openhole", False):
+                    # Place openhole labels on the left side
+                    xText = -(elem["outD"] + (0.075 * stretchHorView))
+                    yText = elem["low"] * 0.85
+                    self.ax.text(xText, yText, elem["summary"],
+                               verticalalignment="top", horizontalalignment="right")
+                else:
+                    # Keep regular tubular labels on the right side
+                    xText = elem["outD"] + (0.075 * stretchHorView)
+                    yText = elem["low"] * 0.85
+                    self.ax.text(xText, yText, elem["summary"],
+                               verticalalignment="top", horizontalalignment="left")
 
         # Draw tubing if present
         if self.tubing:
@@ -243,6 +262,10 @@ class Well:
                            xy=(-stretchHorView + 1, self.mdl - 25), 
                            color=mdlColor, alpha=0.75)
 
+        # Disable x-axis ticks and tick labels
+        self.ax.set_xticks([])
+        self.ax.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
+        
         self.ax.invert_yaxis()
         plt.title(self.name, loc="left")
         plt.tight_layout()
